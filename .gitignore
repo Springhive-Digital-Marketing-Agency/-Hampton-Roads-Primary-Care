@@ -1,0 +1,11 @@
+# OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# IDE / Editors
+.idea/
+.vscode/
+*.sw?
