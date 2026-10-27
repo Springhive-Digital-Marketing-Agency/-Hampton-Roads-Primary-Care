@@ -1,0 +1,361 @@
+/**
+ * HAMPTON ROADS PRIMARY CARE - INDEX3 JAVASCRIPT
+ * Agriko-Inspired Healthcare UI Interactions
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  initStickyHeader();
+  initMobileNavigation();
+  initHeroSlider();
+  initServiceFilters();
+  initCapabilityProgressBars();
+  initBookingModal();
+  initAppointmentForms();
+  initBackToTop();
+  initSmoothScroll();
+});
+
+/* --------------------------------------------------------------------------
+   STICKY HEADER ON SCROLL
+   -------------------------------------------------------------------------- */
+function initStickyHeader() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+
+  const onScroll = () => {
+    if (window.scrollY > 40) {
+      header.classList.add('is-scrolled');
+    } else {
+      header.classList.remove('is-scrolled');
+    }
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE DRAWER NAVIGATION
+   -------------------------------------------------------------------------- */
+function initMobileNavigation() {
+  const toggleBtn = document.querySelector('.mobile-menu-toggle');
+  const drawer = document.querySelector('.mobile-drawer');
+  const backdrop = document.querySelector('.mobile-drawer-backdrop');
+  const closeBtn = document.querySelector('.drawer-close-btn');
+  const navLinks = document.querySelectorAll('.mobile-nav-list a');
+
+  if (!toggleBtn || !drawer || !backdrop) return;
+
+  function openDrawer() {
+    drawer.classList.add('is-open');
+    backdrop.classList.add('is-open');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (drawer.classList.contains('is-open')) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', closeDrawer);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && drawer.classList.contains('is-open')) {
+      closeDrawer();
+    }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   HERO SLIDER (AGRIKO HERO TRANSITIONS)
+   -------------------------------------------------------------------------- */
+function initHeroSlider() {
+  const heroImg = document.querySelector('#heroMainBgImg');
+  const prevBtn = document.querySelector('#heroPrevBtn');
+  const nextBtn = document.querySelector('#heroNextBtn');
+  if (!heroImg) return;
+
+  const slides = [
+    'assets/images/team-hero.webp',
+    'assets/images/hero-primary-care.jpg',
+    'assets/images/hero-team.jpg',
+    'assets/images/hero-consultation.jpg'
+  ];
+
+  let currentIdx = 0;
+
+  function setSlide(index) {
+    currentIdx = (index + slides.length) % slides.length;
+    heroImg.style.opacity = '0.15';
+    setTimeout(() => {
+      heroImg.src = slides[currentIdx];
+      heroImg.style.opacity = '0.90';
+    }, 250);
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      setSlide(currentIdx - 1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      setSlide(currentIdx + 1);
+    });
+  }
+
+  // Auto rotate every 8 seconds
+  setInterval(() => {
+    setSlide(currentIdx + 1);
+  }, 8000);
+}
+
+/* --------------------------------------------------------------------------
+   SERVICES FILTER TABS
+   -------------------------------------------------------------------------- */
+function initServiceFilters() {
+  const filterBtns = document.querySelectorAll('.agriko-filter-btn');
+  const serviceCards = document.querySelectorAll('.service-agriko-card');
+  if (!filterBtns.length || !serviceCards.length) return;
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filterVal = btn.getAttribute('data-filter');
+
+      serviceCards.forEach(card => {
+        const category = card.getAttribute('data-category');
+        if (filterVal === 'all' || category === filterVal || (category && category.includes(filterVal))) {
+          card.style.display = 'flex';
+          setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, 30);
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   WHY CHOOSE US - ANIMATE CAPABILITY PROGRESS BARS
+   -------------------------------------------------------------------------- */
+function initCapabilityProgressBars() {
+  const progressBars = document.querySelectorAll('.progress-fill');
+  if (!progressBars.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        progressBars.forEach(bar => {
+          const width = bar.getAttribute('data-width') || '85%';
+          bar.style.width = width;
+        });
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.2 });
+
+  const section = document.querySelector('#why-us');
+  if (section) observer.observe(section);
+}
+
+/* --------------------------------------------------------------------------
+   APPOINTMENT BOOKING MODAL
+   -------------------------------------------------------------------------- */
+function initBookingModal() {
+  const modalBackdrop = document.querySelector('#bookingModal');
+  if (!modalBackdrop) return;
+
+  const closeBtn = modalBackdrop.querySelector('.modal-close-btn');
+  const openTriggers = document.querySelectorAll('[data-open-modal="booking"]');
+  const serviceSelect = modalBackdrop.querySelector('#modalService');
+  const providerSelect = modalBackdrop.querySelector('#modalProvider');
+
+  function openModal(serviceName = '', providerName = '') {
+    modalBackdrop.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+
+    if (serviceSelect && serviceName) {
+      serviceSelect.value = serviceName;
+    }
+    if (providerSelect && providerName) {
+      providerSelect.value = providerName;
+    }
+  }
+
+  function closeModal() {
+    modalBackdrop.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  openTriggers.forEach(trigger => {
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      const s = trigger.getAttribute('data-service') || '';
+      const p = trigger.getAttribute('data-provider') || '';
+      openModal(s, p);
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalBackdrop.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   APPOINTMENT FORM SUBMISSIONS & VALIDATION
+   -------------------------------------------------------------------------- */
+function initAppointmentForms() {
+  const forms = document.querySelectorAll('.appointment-booking-form');
+
+  forms.forEach(form => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const nameInput = form.querySelector('[name="fullName"]');
+      const phoneInput = form.querySelector('[name="phone"]');
+      const emailInput = form.querySelector('[name="email"]');
+      const serviceSelect = form.querySelector('[name="service"]');
+      const feedbackEl = form.querySelector('.form-alert-feedback') || createFeedbackEl(form);
+
+      if (!nameInput.value.trim() || !phoneInput.value.trim() || !emailInput.value.trim()) {
+        showFeedback(feedbackEl, 'Please fill in all required fields (Full Name, Phone, and Email).', 'is-error');
+        return;
+      }
+
+      const phonePattern = /^[0-9+()#&*-=\s.]{7,}$/;
+      if (!phonePattern.test(phoneInput.value.trim())) {
+        showFeedback(feedbackEl, 'Please enter a valid phone number so our clinic team can contact you.', 'is-error');
+        return;
+      }
+
+      const patientName = nameInput.value.trim();
+      const serviceSelected = serviceSelect ? serviceSelect.value : 'Primary Care';
+
+      const successHtml = `
+        <strong>Thank you, ${patientName}!</strong><br>
+        Your appointment request for <strong>${serviceSelected}</strong> has been received. Our clinic coordinator will contact you at <strong>${phoneInput.value.trim()}</strong> during business hours to confirm your scheduled time.
+        <br><br>
+        <a href="https://www.optimantra.com/optimus/patient/patientaccess/servicesall?pid=UlpEbWIxZStkWGpjZ2NWYVVuY1ppdz09&lid=MlQxVktvUUJPbnI1WXJ2Uk9ISmFtZz09" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display:inline-flex; margin-top:4px;">
+          Book Directly on OptiMantra Portal &rarr;
+        </a>
+      `;
+
+      showFeedback(feedbackEl, successHtml, 'is-success');
+      form.reset();
+    });
+  });
+
+  function createFeedbackEl(form) {
+    const div = document.createElement('div');
+    div.className = 'form-alert-feedback';
+    form.insertBefore(div, form.firstChild);
+    return div;
+  }
+
+  function showFeedback(el, html, statusClass) {
+    el.className = `form-alert-feedback ${statusClass}`;
+    el.innerHTML = html;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+/* --------------------------------------------------------------------------
+   BACK TO TOP BUTTON
+   -------------------------------------------------------------------------- */
+function initBackToTop() {
+  const btn = document.querySelector('#backToTopBtn');
+  if (!btn) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      btn.classList.add('is-visible');
+    } else {
+      btn.classList.remove('is-visible');
+    }
+  }, { passive: true });
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   SMOOTH SCROLLING FOR INTERNAL ANCHORS
+   -------------------------------------------------------------------------- */
+function initSmoothScroll() {
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+      if (targetId === '#' || !targetId) return;
+
+      const targetEl = document.querySelector(targetId);
+      if (targetEl) {
+        e.preventDefault();
+        targetEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   EDUCATION INFO CONSULTATION HANDLER
+   -------------------------------------------------------------------------- */
+window.openEducationInfo = function(topic) {
+  const modal = document.querySelector('#bookingModal');
+  const serviceSelect = document.querySelector('#modalService');
+  const notesField = document.querySelector('#modalNotes');
+  
+  if (serviceSelect) {
+    if (topic === 'hypertension' || topic === 'heart') {
+      serviceSelect.value = 'Chronic Disease Management';
+    } else if (topic === 'diabetes') {
+      serviceSelect.value = 'Preventive Health Screenings';
+    } else if (topic === 'stroke' || topic === 'cardiac') {
+      serviceSelect.value = 'General Medical Consultation';
+    } else if (topic === 'smoking') {
+      serviceSelect.value = 'Nutrition and Weight Management Advice';
+    }
+  }
+
+  if (notesField && !notesField.value) {
+    notesField.value = `Interested in clinical guidance and preventive wellness regarding ${topic}.`;
+  }
+
+  if (modal) {
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+};
