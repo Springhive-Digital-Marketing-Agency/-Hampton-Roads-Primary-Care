@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileNavigation();
   initHeroSlider();
   initServiceFilters();
+  initInsuranceDeck();
   initBookingModal();
   initAppointmentForms();
   initBackToTop();
@@ -175,7 +176,7 @@ function initBookingModal() {
   const serviceSelect = modalBackdrop.querySelector('#modalService');
   const providerSelect = modalBackdrop.querySelector('#modalProvider');
 
-  function openModal(serviceName = '', providerName = '') {
+  function openModal(serviceName = '', providerName = '', insuranceName = '') {
     modalBackdrop.classList.add('is-open');
     document.body.style.overflow = 'hidden';
 
@@ -184,6 +185,10 @@ function initBookingModal() {
     }
     if (providerSelect && providerName) {
       providerSelect.value = providerName;
+    }
+    const timingInput = modalBackdrop.querySelector('#modalTiming');
+    if (timingInput && insuranceName) {
+      timingInput.value = `Verify Insurance Coverage: ${insuranceName}`;
     }
   }
 
@@ -197,7 +202,8 @@ function initBookingModal() {
       e.preventDefault();
       const s = trigger.getAttribute('data-service') || '';
       const p = trigger.getAttribute('data-provider') || '';
-      openModal(s, p);
+      const ins = trigger.getAttribute('data-insurance') || '';
+      openModal(s, p, ins);
     });
   });
 
@@ -341,3 +347,117 @@ window.openEducationInfo = function(topic) {
     document.body.style.overflow = 'hidden';
   }
 };
+
+/* --------------------------------------------------------------------------
+   INTERACTIVE CARE & COVERAGE COMMAND DECK
+   -------------------------------------------------------------------------- */
+function initInsuranceDeck() {
+  const deck = document.querySelector('#insurance');
+  if (!deck) return;
+
+  const filterPills = deck.querySelectorAll('.insurance-filter-pill');
+  const searchInput = deck.querySelector('#insuranceSearchInput');
+  const searchClear = deck.querySelector('#insuranceSearchClear');
+  const cards = deck.querySelectorAll('.coverage-matrix-card');
+  const statusText = deck.querySelector('#insuranceShowingText');
+  const noMatchBox = deck.querySelector('#insuranceNoMatch');
+
+  let activeFilter = 'all';
+
+  function applyFilters() {
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    let matchCount = 0;
+
+    cards.forEach(card => {
+      const category = card.getAttribute('data-category') || '';
+      const keywords = card.getAttribute('data-keywords') || '';
+      const cardText = card.textContent.toLowerCase();
+
+      const matchesCategory = (activeFilter === 'all') || (category === activeFilter);
+      const matchesSearch = !query || keywords.includes(query) || cardText.includes(query);
+
+      if (matchesCategory && matchesSearch) {
+        card.style.display = 'flex';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+        matchCount++;
+      } else {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(8px)';
+        card.style.display = 'none';
+      }
+    });
+
+    // Update status text
+    if (statusText) {
+      if (query) {
+        statusText.textContent = `Found ${matchCount} network${matchCount === 1 ? '' : 's'} matching "${query}"`;
+      } else if (activeFilter === 'all') {
+        statusText.textContent = `Showing all 8 verified coverage networks`;
+      } else if (activeFilter === 'gov') {
+        statusText.textContent = `Showing 3 state & military networks`;
+      } else if (activeFilter === 'commercial') {
+        statusText.textContent = `Showing 3 commercial health networks`;
+      } else if (activeFilter === 'financial') {
+        statusText.textContent = `Showing 2 financial assistance & HSA programs`;
+      }
+    }
+
+    // Toggle No Match state
+    if (noMatchBox) {
+      if (matchCount === 0) {
+        noMatchBox.style.display = 'block';
+      } else {
+        noMatchBox.style.display = 'none';
+      }
+    }
+  }
+
+  // Filter Pill Click Handlers
+  filterPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      filterPills.forEach(p => {
+        p.classList.remove('active');
+        p.setAttribute('aria-selected', 'false');
+      });
+      pill.classList.add('active');
+      pill.setAttribute('aria-selected', 'true');
+      activeFilter = pill.getAttribute('data-filter') || 'all';
+      applyFilters();
+    });
+  });
+
+  // Search Input Handler
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value.trim();
+      if (searchClear) {
+        searchClear.style.display = val.length > 0 ? 'flex' : 'none';
+      }
+      if (val.length > 0 && activeFilter !== 'all') {
+        filterPills.forEach(p => {
+          p.classList.remove('active');
+          p.setAttribute('aria-selected', 'false');
+        });
+        const allPill = deck.querySelector('.insurance-filter-pill[data-filter="all"]');
+        if (allPill) {
+          allPill.classList.add('active');
+          allPill.setAttribute('aria-selected', 'true');
+        }
+        activeFilter = 'all';
+      }
+      applyFilters();
+    });
+  }
+
+  // Search Clear Handler
+  if (searchClear && searchInput) {
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchClear.style.display = 'none';
+      searchInput.focus();
+      applyFilters();
+    });
+  }
+}
+
