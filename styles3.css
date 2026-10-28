@@ -2238,7 +2238,7 @@ ul, ol {
   position: relative;
   z-index: 1;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   gap: 1.25rem;
@@ -2252,6 +2252,7 @@ ul, ol {
 .insurance-filter-pills {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
@@ -2302,15 +2303,6 @@ ul, ol {
 .insurance-filter-pill.active .pill-count {
   background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
-}
-
-.insurance-counter-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--primary-700);
 }
 
 .pulse-dot-green {
