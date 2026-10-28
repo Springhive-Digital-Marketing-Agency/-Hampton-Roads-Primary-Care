@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileNavigation();
   initHeroSlider();
   initServiceFilters();
-  initCapabilityProgressBars();
   initBookingModal();
   initAppointmentForms();
   initBackToTop();
@@ -83,30 +82,34 @@ function initMobileNavigation() {
 }
 
 /* --------------------------------------------------------------------------
-   HERO SLIDER (AGRIKO HERO TRANSITIONS)
+   HERO SLIDER (SMOOTH FADE IN CROSSFADE TRANSITIONS)
    -------------------------------------------------------------------------- */
 function initHeroSlider() {
-  const heroImg = document.querySelector('#heroMainBgImg');
+  const slides = document.querySelectorAll('.hero-bg-layer .hero-bg-img');
   const prevBtn = document.querySelector('#heroPrevBtn');
   const nextBtn = document.querySelector('#heroNextBtn');
-  if (!heroImg) return;
-
-  const slides = [
-    'assets/images/team-hero.webp',
-    'assets/images/hero-primary-care.jpg',
-    'assets/images/hero-team.jpg',
-    'assets/images/hero-consultation.jpg'
-  ];
+  if (!slides.length) return;
 
   let currentIdx = 0;
+  let isTransitioning = false;
 
-  function setSlide(index) {
-    currentIdx = (index + slides.length) % slides.length;
-    heroImg.style.opacity = '0.15';
+  function setSlide(newIdx) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+
+    const nextIdx = (newIdx + slides.length) % slides.length;
+    if (nextIdx === currentIdx) {
+      isTransitioning = false;
+      return;
+    }
+
+    slides[currentIdx].classList.remove('active');
+    slides[nextIdx].classList.add('active');
+    currentIdx = nextIdx;
+
     setTimeout(() => {
-      heroImg.src = slides[currentIdx];
-      heroImg.style.opacity = '0.90';
-    }, 250);
+      isTransitioning = false;
+    }, 1400);
   }
 
   if (prevBtn) {
@@ -158,28 +161,7 @@ function initServiceFilters() {
   });
 }
 
-/* --------------------------------------------------------------------------
-   WHY CHOOSE US - ANIMATE CAPABILITY PROGRESS BARS
-   -------------------------------------------------------------------------- */
-function initCapabilityProgressBars() {
-  const progressBars = document.querySelectorAll('.progress-fill');
-  if (!progressBars.length) return;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        progressBars.forEach(bar => {
-          const width = bar.getAttribute('data-width') || '85%';
-          bar.style.width = width;
-        });
-        observer.disconnect();
-      }
-    });
-  }, { threshold: 0.2 });
-
-  const section = document.querySelector('#why-us');
-  if (section) observer.observe(section);
-}
 
 /* --------------------------------------------------------------------------
    APPOINTMENT BOOKING MODAL
